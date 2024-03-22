@@ -10,7 +10,7 @@ I donot want a portal for all resources
 oidc [<matcher>] {
     client_id <client_id>
     client_secret <client_secret>
-    redirect_url <redirect_url>
+    client_url <client_url>
     [scope <scope>]
 
     metadata_url <metadata_url>
