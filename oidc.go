@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"strconv"
 	"strings"
 	"time"
 
@@ -235,8 +234,8 @@ func (o *OIDCAuth) Authenticate(w http.ResponseWriter, r *http.Request) (User, b
 		return string(b)
 	}
 
-	cookie := getCookie(r, "caddy_id_token")
-	if cookie == "" {
+	cookie, err := r.Cookie("caddy_id_token")
+	if err != nil {
 		goto noCookie
 	}
 
@@ -244,7 +243,7 @@ func (o *OIDCAuth) Authenticate(w http.ResponseWriter, r *http.Request) (User, b
 
 	// validate id token
 	t, err = jwt.Parse(
-		[]byte(cookie),
+		[]byte(cookie.Value),
 		jwt.WithKeySet(o.jwks),
 	)
 	if err != nil {
@@ -344,54 +343,20 @@ func (o OIDCAuth) handleRedirect(w http.ResponseWriter, r *http.Request, next ca
 }
 
 func setCookie(w http.ResponseWriter, r *http.Request, name string, value string, expires time.Time) {
-	valBytes := []byte(value)
-	count := 0
 	secure := false
 	if r.TLS != nil || r.Header.Get("X-Forwarded-Proto") == "https" {
 		secure = true
 	}
-	for i := 0; i < len(valBytes); i += 2048 {
-		cookie := http.Cookie{
-			Name:     fmt.Sprintf("%s.%d", name, count),
-			Value:    string(valBytes[i:min(i+2048, len(valBytes))]),
-			Expires:  expires,
-			Path:     "/",
-			HttpOnly: true,
-			SameSite: http.SameSiteStrictMode,
-			Secure:   secure,
-		}
-		http.SetCookie(w, &cookie)
-		count++
+	cookie := http.Cookie{
+		Name:     name,
+		Value:    value,
+		Expires:  expires,
+		Path:     "/",
+		HttpOnly: true,
+		SameSite: http.SameSiteStrictMode,
+		Secure:   secure,
 	}
-}
-
-func getCookie(r *http.Request, name string) (value string) {
-	needle := fmt.Sprintf("%s.", name)
-	parts := make(map[int]string)
-	count := 0
-	for _, cookie := range r.Cookies() {
-		if !strings.HasPrefix(cookie.Name, needle) {
-			continue
-		}
-		indexStr := strings.TrimPrefix(cookie.Name, needle)
-		index, err := strconv.Atoi(indexStr)
-		if err != nil {
-			continue
-		}
-		parts[index] = cookie.Value
-		count = max(index, count)
-		// fmt.Printf("cookie: %v %v %v\n", index, cookie.Name, cookie.Value)
-	}
-
-	for i := 0; i <= count; i++ {
-		s, ok := parts[i]
-		if !ok {
-			return ""
-		}
-		value += s
-	}
-	// fmt.Printf("cookie: %v\n", value)
-	return
+	http.SetCookie(w, &cookie)
 }
 
 func (o OIDCAuth) handleCallback(w http.ResponseWriter, r *http.Request, next caddyhttp.Handler) error {
