@@ -98,6 +98,9 @@ func (o *OIDCAuth) Provision(ctx caddy.Context) (err error) {
 	}
 
 	callbackURLString, err := o.GetClientCallbackURLString()
+	if err != nil {
+		return fmt.Errorf("failed to get callback url: %w", err)
+	}
 
 	o.provider, err = openidConnect.NewCustomisedURL(
 		repl.ReplaceKnown(o.ClientID, ""),
