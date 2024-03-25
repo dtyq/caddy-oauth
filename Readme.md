@@ -1,10 +1,10 @@
-# caddy oidc auth
+# Caddy oidc auth plugin
 
-## why not authcrunch
+## Why not authcrunch
 
-I donot want a portal for all resources
+I don't want a separate portal for each individual resource.
 
-## usage
+## Usage
 
 ```Caddyfile
 oidc [<matcher>] {
@@ -22,3 +22,5 @@ oidc [<matcher>] {
     [end_session_url <end_session_url>]
 }
 ```
+
+You may want other authz plugins to work with.
