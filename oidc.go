@@ -325,6 +325,7 @@ noCookie:
 
 func (o OIDCAuth) handleRedirect(w http.ResponseWriter, r *http.Request, next caddyhttp.Handler) error {
 	state := r.URL.Query().Get("return_url")
+	state = url.QueryEscape(state)
 
 	sess, err := o.provider.BeginAuth(state)
 	if err != nil {
