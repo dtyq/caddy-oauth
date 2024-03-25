@@ -1,4 +1,4 @@
-module github.com/kkguan/caddy-oauth
+module github.com/dtyq/caddy-oauth
 
 go 1.21.5
 
