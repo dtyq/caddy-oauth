@@ -390,7 +390,7 @@ func getCookie(r *http.Request, name string) (value string) {
 		}
 		value += s
 	}
-	fmt.Printf("cookie: %v\n", value)
+	// fmt.Printf("cookie: %v\n", value)
 	return
 }
 
